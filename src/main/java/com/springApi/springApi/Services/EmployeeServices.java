@@ -8,10 +8,9 @@ import com.springApi.springApi.Repository.EmployeeRepository;
 
 /**
  * Service Class for Employee.
- * @param <T>
  */
 @Service
-public class EmployeeServices<T> implements IEmployeeServices {
+public class EmployeeServices extends AServices implements IEmployeeServices {
 	
 	@Autowired
 	private EmployeeRepository employeeRepo;
@@ -95,41 +94,6 @@ public class EmployeeServices<T> implements IEmployeeServices {
 			result = getResultObject(employee.getId(), employee == null);
 		}
 		catch(Exception ex) { throw ex; }
-		return result;
-	}
-	
-	/**
-	 * Method to prepare result model for end point.
-	 * @param <T>
-	 * @param data
-	 * @param isEmpty
-	 * @return
-	 */
-	@SuppressWarnings("hiding")
-	private <T> Results<T> getResultObject(T data, Boolean isEmpty){
-		if(isEmpty) {
-			return getResultObject(null, "No Data Found!", false);
-		}
-		else {
-			return getResultObject(data, "", true);
-		}
-	}
-	
-	/**
-	 * Overloaded method to prepare result model for end point.
-	 * @param <T>
-	 * @param Data
-	 * @param message
-	 * @param isSuccessfull
-	 * @return
-	 */
-	@SuppressWarnings("hiding")
-	private <T> Results<T> getResultObject(T Data, String message, Boolean isSuccessfull)
-	{
-		Results<T> result = new Results<T>();
-		result.Data = Data;
-		result.Message = message;
-		result.IsSuccessfull = isSuccessfull;
 		return result;
 	}
 }
