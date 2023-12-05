@@ -3,13 +3,15 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.springApi.springApi.Entities.Employee;
+import com.springApi.springApi.Entities.Results;
 import com.springApi.springApi.Repository.EmployeeRepository;
 
 /**
  * Service Class for Employee.
+ * @param <T>
  */
 @Service
-public class EmployeeServices implements IEmployeeServices {
+public class EmployeeServices<T> implements IEmployeeServices {
 	
 	@Autowired
 	private EmployeeRepository employeeRepo;
@@ -21,70 +23,113 @@ public class EmployeeServices implements IEmployeeServices {
 	 * This method returns employee from DB.
 	 */
 	@Override
-	public List<Employee> getEmployee() {
-		List<Employee> employees;
+	public Results<List<Employee>> getEmployee() {
+		Results<List<Employee>> result = new Results<List<Employee>>();
 		try {
-			employees = employeeRepo.findAll();
-			if(employees == null) throw new NullPointerException("Employee details not found!");
+			List<Employee> employees = employeeRepo.findAll();
+			result = getResultObject(employees, employees.isEmpty());
 		}
-		catch(Exception ex) { throw ex; }
-		return employees;
+		catch(Exception ex) { 
+			throw ex; 
+			}
+		return result;
 	}
 
 	/**
 	 * This method returns employee details based on Id.
 	 */
 	@Override
-	public Employee getEmployee(long id) {
-		Employee employee;
+	public Results<Employee> getEmployee(long id) {
+		Results<Employee> result = new Results<Employee>();
 		try {
-			employee = employeeRepo.findById(id).get();
-			if(employee == null) throw new NullPointerException("Employee details not found with id : " + employee.getId());
+			Employee employee = null;
+			if(employeeRepo.existsById(id)) {
+				employee = employeeRepo.findById(id).get();
+				}
+			result = getResultObject(employee, employee == null);
 		}
 		catch(Exception ex) { throw ex; }
-		return employee;
+		return result;
 	}
 
 	/**
 	 * This method inserts employee details to DB.
 	 */
 	@Override
-	public Employee addEmployee(Employee employee) {
-		Employee employeeDetail = null;
+	public Results<Employee> addEmployee(Employee employee) {
+		Results<Employee> result = new Results<Employee>();
 		try {
-			employeeDetail = employeeRepo.save(employee);
-			if(employeeDetail == null) throw new NullPointerException("Failed to insert Employee details for employee : "+ employee.getName());
+			Employee employeeDetail = employeeRepo.save(employee);
+			result = getResultObject(employeeDetail, employeeDetail == null);
 		}
 		catch (Exception ex) { throw ex; }
-		return employeeDetail;
+		return result;
 	}
 	
 	/**
 	 * This method updates employee details from DB.
 	 */
 	@Override
-	public Employee updateEmployee(Employee employee) {
-		Employee employeeDetail;
+	public Results<Employee> updateEmployee(Employee employee) {
+		Results<Employee> result = new Results<Employee>();
 		try {
-			employeeDetail = employeeRepo.save(employee);
-			if(employeeDetail == null) throw new NullPointerException("Failed to update Employee details for employee : " + employee.getName());
+			Employee employeeDetail = employeeRepo.save(employee);
+			result = getResultObject(employeeDetail, employeeDetail == null);
 		}
 		catch (Exception ex) { throw ex; }
-		return employeeDetail;
+		return result;
 	}
 
 	/**
 	 * This method deletes employee from DB based on Id.
 	 */
 	@Override
-	public long deleteEmployee(long parseLong) {
-		Employee employee;
+	public Results<Long> deleteEmployee(long id) {
+		Results<Long> result = new Results<Long>();
 		try {
-			employee = employeeRepo.findById(parseLong).get();
-			if(employee == null) throw new NullPointerException("Employee details not found with id : " + employee.getId());
-			else employeeRepo.delete(employee);
+			Employee employee = null;
+			if(employeeRepo.existsById(id)) {
+				employee = employeeRepo.findById(id).get();
+				employeeRepo.delete(employee);
+				}
+			result = getResultObject(employee.getId(), employee == null);
 		}
 		catch(Exception ex) { throw ex; }
-		return employee.getId();
+		return result;
+	}
+	
+	/**
+	 * Method to prepare result model for end point.
+	 * @param <T>
+	 * @param data
+	 * @param isEmpty
+	 * @return
+	 */
+	@SuppressWarnings("hiding")
+	private <T> Results<T> getResultObject(T data, Boolean isEmpty){
+		if(isEmpty) {
+			return getResultObject(null, "No Data Found!", false);
+		}
+		else {
+			return getResultObject(data, "", true);
+		}
+	}
+	
+	/**
+	 * Overloaded method to prepare result model for end point.
+	 * @param <T>
+	 * @param Data
+	 * @param message
+	 * @param isSuccessfull
+	 * @return
+	 */
+	@SuppressWarnings("hiding")
+	private <T> Results<T> getResultObject(T Data, String message, Boolean isSuccessfull)
+	{
+		Results<T> result = new Results<T>();
+		result.Data = Data;
+		result.Message = message;
+		result.IsSuccessfull = isSuccessfull;
+		return result;
 	}
 }
