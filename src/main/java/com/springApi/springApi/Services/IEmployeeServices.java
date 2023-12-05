@@ -3,11 +3,17 @@ package com.springApi.springApi.Services;
 import java.util.List;
 
 import com.springApi.springApi.Entities.Employee;
+import com.springApi.springApi.Entities.Results;
 
 public interface IEmployeeServices {
-	public List<Employee> getEmployee();
-	public Employee getEmployee(long id);
-	public Employee addEmployee(Employee employee);
-	public Employee updateEmployee(Employee employee);
-	public long deleteEmployee(long parseLong);
+	
+	public Results<List<Employee>> getEmployee();
+	
+	public Results<Employee> getEmployee(long id);
+	
+	public Results<Employee> addEmployee(Employee employee);
+	
+	public Results<Employee> updateEmployee(Employee employee);
+	
+	public Results<Long> deleteEmployee(long parseLong);
 }

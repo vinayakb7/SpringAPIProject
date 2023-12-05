@@ -1,5 +1,4 @@
 package com.springApi.springApi.Controller;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -8,6 +7,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.javatuples.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import com.springApi.springApi.Entities.Employee;
+import com.springApi.springApi.Entities.Results;
 import com.springApi.springApi.Services.IEmployeeServices;
 
 /**
@@ -43,14 +44,13 @@ public class EmployeeController {
 	 * @throws Exception 
 	 */
 	@GetMapping("/employee")
-	public List<Employee> getEmployee() {
-		List<Employee> employee = new ArrayList<>();
+	public ResponseEntity<Results<List<Employee>>> getEmployee() {
+		Results<List<Employee>> result = new Results<List<Employee>>();
 		try {
-			employee = employeeServices.getEmployee();
-			if(employee == null) throw new NullPointerException("Cant find any employee details");
+			result = employeeServices.getEmployee();
+			return getResult(result);
 		}
 		catch (Exception ex) { throw ex; }
-		return employee;
 	}
 	
 	/**
@@ -59,14 +59,13 @@ public class EmployeeController {
 	 * @return Employee Details
 	 */
 	@GetMapping("/employee/{id}")
-	public Employee getSingleEmployee(@PathVariable int id) {
-		Employee employee;
+	public ResponseEntity<Results<Employee>> getSingleEmployee(@PathVariable int id) {
+		Results<Employee> result = new Results<Employee>();
 		try {
-			employee = employeeServices.getEmployee(id);
-			if(employee == null) throw new NullPointerException("Cant find any employee for id : "+id);
+			result = employeeServices.getEmployee(id);
+			return getResult(result);
 		}
 		catch (Exception ex) { throw ex; }
-		return employee;
 	}
 
 	/**
@@ -75,14 +74,13 @@ public class EmployeeController {
 	 * @return Added employee details
 	 */
 	@PostMapping("/employee")
-	public Employee addEmployee(@RequestBody Employee employee) {
-		Employee employeeDetail;
+	public ResponseEntity<Results<Employee>> addEmployee(@RequestBody Employee employee) {
+		Results<Employee> result = new Results<Employee>();
 		try {
-			employeeDetail = employeeServices.addEmployee(employee);
-			if(employeeDetail == null) throw new NullPointerException("Unable to insert employee for id : "+employee.getId());
+			result = employeeServices.addEmployee(employee);
+			return getResult(result);
 		}
 		catch (Exception ex) { throw ex; }
-		return employeeDetail;
 	}
 	
 	/**
@@ -91,14 +89,13 @@ public class EmployeeController {
 	 * @return Updated Employee Details.
 	 */
 	@PutMapping("/employee")
-	public Employee updateEmployee(@RequestBody Employee employee) {
-		Employee employeeDetail;
+	public ResponseEntity<Results<Employee>> updateEmployee(@RequestBody Employee employee) {
+		Results<Employee> result = new Results<Employee>();
 		try {
-			employeeDetail = employeeServices.updateEmployee(employee);
-			if(employeeDetail == null) throw new NullPointerException("Unable to update employee details for id : "+employee.getId());
+			result = employeeServices.updateEmployee(employee);
+			return getResult(result);
 		}
 		catch (Exception ex) { throw ex; }
-		return employeeDetail;
 	}
 	
 	/**
@@ -106,14 +103,29 @@ public class EmployeeController {
 	 * @param id
 	 */
 	@DeleteMapping("/employee/{id}")
-	public String deleteEmployee(@PathVariable long id) {
-		long employeeId;
+	public ResponseEntity<Results<Long>> deleteEmployee(@PathVariable long id) {
+		Results<Long> result = new Results<Long>();
 		try {
-			employeeId = employeeServices.deleteEmployee(id);
-			if(employeeId > 0) throw new NullPointerException("Failed to Delete employee with id : "+id);
+			result = employeeServices.deleteEmployee(id);
+			return getResult(result);
 		}
 		catch (Exception ex) { throw ex; }
-		return "Employee "+ employeeId +" Deleted Successfully!";
+	}
+	
+	/**
+	 * Method to return ResponseEntity based on response.
+	 * if response is success then it return 200 and it fails then it returns 400.
+	 * @param <T>
+	 * @param result
+	 * @return ResponseEntity
+	 */
+	private <T> ResponseEntity<Results<T>> getResult(Results<T> result){
+		if(result.IsSuccessfull) {
+			return ResponseEntity.ok(result);
+		}
+		else {
+			return ResponseEntity.badRequest().body(result);
+		}
 	}
 	
 	/**
